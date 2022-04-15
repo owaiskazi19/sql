@@ -6,12 +6,12 @@
 
 buildscript {
     ext {
-        opensearch_version = System.getProperty("opensearch.version", "2.0.0-alpha1-SNAPSHOT")
+        opensearch_version = System.getProperty("opensearch.version", "3.0.0-SNAPSHOT")
     }
 
     repositories {
         mavenLocal()
-        maven { url "https://aws.oss.sonatype.org/content/repositories/snapshots" }
+//        maven { url "https://aws.oss.sonatype.org/content/repositories/snapshots" }
         mavenCentral()
     }
 
@@ -31,7 +31,7 @@ plugins {
 // Repository on root level is for dependencies that project code depends on. And this block must be placed after plugins{}
 repositories {
     mavenLocal()
-    maven { url "https://aws.oss.sonatype.org/content/repositories/snapshots" }
+//    maven { url "https://aws.oss.sonatype.org/content/repositories/snapshots" }
     mavenCentral() // For Elastic Libs that you can use to get started coding until open OpenSearch libs are available
 }
 

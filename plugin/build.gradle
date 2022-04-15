@@ -25,7 +25,8 @@
 plugins {
     id 'java'
     id 'jacoco'
-    id 'opensearch.opensearchplugin'
+//    id 'opensearch.opensearchplugin'
+    id 'application'
 }
 
 ext {
@@ -38,19 +39,23 @@ repositories {
     mavenCentral()
 }
 
-opensearchplugin {
-    name 'opensearch-sql'
-    description 'OpenSearch SQL'
-    classname 'org.opensearch.sql.plugin.SQLPlugin'
-    licenseFile rootProject.file("LICENSE.txt")
-    noticeFile rootProject.file("NOTICE")
-}
+//opensearchplugin {
+//    name 'opensearch-sql'
+//    description 'OpenSearch SQL'
+//    classname 'org.opensearch.sql.plugin.SQLPlugin'
+//    licenseFile rootProject.file("LICENSE.txt")
+//    noticeFile rootProject.file("NOTICE")
+//}
+
+//apply plugin: 'application'
+
+mainClassName = 'org.opensearch.sql.plugin.transportservice.RunPlugin'
 
 javadoc.enabled = false
 test.enabled = false
-loggerUsageCheck.enabled = false
-dependencyLicenses.enabled = false
-thirdPartyAudit.enabled = false
+//loggerUsageCheck.enabled = false
+//dependencyLicenses.enabled = false
+//thirdPartyAudit.enabled = false
 
 configurations.all {
     resolutionStrategy.force 'junit:junit:4.13.2'
@@ -66,10 +71,18 @@ configurations.all {
 }
 
 dependencies {
-    api group: 'org.springframework', name: 'spring-beans', version: '5.2.20.RELEASE'
-    api project(":ppl")
-    api project(':legacy')
-    api project(':opensearch')
+    implementation group: 'org.springframework', name: 'spring-beans', version: '5.2.20.RELEASE'
+    implementation project(":ppl")
+    implementation project(':legacy')
+    implementation project(':opensearch')
+    implementation group: 'io.netty', name: 'netty-all', version: '4.1.73.Final'
+    implementation "io.netty:netty-buffer:4.1.73.Final"
+    implementation "io.netty:netty-codec:4.1.73.Final"
+    implementation "io.netty:netty-codec-http:4.1.73.Final"
+    implementation "io.netty:netty-common:4.1.73.Final"
+    implementation "io.netty:netty-handler:4.1.73.Final"
+    implementation "io.netty:netty-resolver:4.1.73.Final"
+    implementation "io.netty:netty-transport:4.1.73.Final"
 }
 
 
@@ -80,72 +93,72 @@ ext {
 }
 
 // ANTLR generated parser file is too large to be checked which caused licenseHeaders stuck.
-licenseHeaders {
-    enabled = true
-    excludes = ['org/opensearch/sql/antlr/parser/**']
-}
+//licenseHeaders {
+//    enabled = true
+//    excludes = ['org/opensearch/sql/antlr/parser/**']
+//}
 
-tasks.withType(licenseHeaders.class) {
-    additionalLicense 'AL   ', 'Apache', 'Licensed under the Apache License, Version 2.0 (the "License")'
-}
+//tasks.withType(licenseHeaders.class) {
+//    additionalLicense 'AL   ', 'Apache', 'Licensed under the Apache License, Version 2.0 (the "License")'
+//}
 
 // TODO: fix forbidden APIs
 // from police-man plugin, see https://github.com/policeman-tools/forbidden-apis/wiki/GradleUsage
-forbiddenApis.ignoreFailures = true
-// TODO: fix forbidden code patterns
-// introduced by OpenSearch plugin
-// see https://github.com/elastic/elasticsearch/blob/master/buildSrc/src/main/java/org/elasticsearch/gradle/precommit/ForbiddenPatternsTask.java
-forbiddenPatterns {
-    setEnabled(false)
-}
+//forbiddenApis.ignoreFailures = true
+//// TODO: fix forbidden code patterns
+//// introduced by OpenSearch plugin
+//// see https://github.com/elastic/elasticsearch/blob/master/buildSrc/src/main/java/org/elasticsearch/gradle/precommit/ForbiddenPatternsTask.java
+//forbiddenPatterns {
+//    setEnabled(false)
+//}
 
 // TODO: fix license. skip dependency license checks
-dependencyLicenses.enabled = false
+//dependencyLicenses.enabled = false
 
 // We don't need to follow OpenSearch testing naming conventions.
 // see https://github.com/elastic/elasticsearch/blob/323f312bbc829a63056a79ebe45adced5099f6e6/buildSrc/src/main/java/org/elasticsearch/gradle/precommit/TestingConventionsTasks.java
 // enable testingConventions check will cause errors like:  "Classes ending with [Tests] must subclass [LuceneTestCase]"
-testingConventions.enabled = false
+//testingConventions.enabled = false
 
 // TODO: need to verify the thirdPartyAudi
 // currently it complains missing classes like ibatis, mysql etc, should not be a problem
-thirdPartyAudit.enabled = false
+//thirdPartyAudit.enabled = false
 
 
 apply plugin: 'nebula.ospackage'
-validateNebulaPom.enabled = false
+//validateNebulaPom.enabled = false
 
 // This is afterEvaluate because the bundlePlugin ZIP task is updated afterEvaluate and changes the ZIP name to match the plugin name
 afterEvaluate {
-    ospackage {
-        packageName = "${rootProject.name}"
-        release = isSnapshot ? "0.1" : '1'
-        version = "${project.version}" - "-SNAPSHOT"
-
-        into '/usr/share/elasticsearch/plugins'
-        from(zipTree(bundlePlugin.archivePath)) {
-            into opensearchplugin.name
-        }
-
-        user 'root'
-        permissionGroup 'root'
-        fileMode 0644
-        dirMode 0755
-
-        requires('elasticsearch-oss', versions.elasticsearch, EQUAL)
-        packager = 'Amazon'
-        vendor = 'Amazon'
-        os = 'LINUX'
-        prefix '/usr'
-
-        license 'ASL-2.0'
-        maintainer 'OpenSearch Team <opensearch@amazon.com>'
-        url 'https://www.opensearch.org/downloads.html'
-        summary '''
-         SQL plugin for OpenSearch.
-         Reference documentation can be found at https://docs-beta.opensearch.org/.
-    '''.stripIndent().replace('\n', ' ').trim()
-    }
+//    ospackage {
+//        packageName = "${rootProject.name}"
+//        release = isSnapshot ? "0.1" : '1'
+//        version = "${project.version}" - "-SNAPSHOT"
+//
+//        into '/usr/share/elasticsearch/plugins'
+////        from(zipTree(bundlePlugin.archivePath)) {
+////            into opensearchplugin.name
+////        }
+//
+//        user 'root'
+//        permissionGroup 'root'
+//        fileMode 0644
+//        dirMode 0755
+//
+//        requires('elasticsearch-oss', versions.elasticsearch, EQUAL)
+//        packager = 'Amazon'
+//        vendor = 'Amazon'
+//        os = 'LINUX'
+//        prefix '/usr'
+//
+//        license 'ASL-2.0'
+//        maintainer 'OpenSearch Team <opensearch@amazon.com>'
+//        url 'https://www.opensearch.org/downloads.html'
+//        summary '''
+//         SQL plugin for OpenSearch.
+//         Reference documentation can be found at https://docs-beta.opensearch.org/.
+//    '''.stripIndent().replace('\n', ' ').trim()
+//    }
 
     buildRpm {
         arch = 'NOARCH'
