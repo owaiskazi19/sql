@@ -1,6 +1,5 @@
 package org.opensearch.sql.plugin.transportservice;
 
-//import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.opensearch.Version;
@@ -11,11 +10,15 @@ import org.opensearch.common.network.NetworkModule;
 import org.opensearch.common.network.NetworkService;
 import org.opensearch.common.settings.Settings;
 import org.opensearch.common.util.PageCacheRecycler;
-//import org.opensearch.discovery.PluginRequest;
-//import org.opensearch.discovery.PluginResponse;
+import org.opensearch.discovery.PluginRequest;
+import org.opensearch.discovery.PluginResponse;
+import org.opensearch.index.IndicesModuleNameResponse;
+import org.opensearch.index.IndicesModuleRequest;
+import org.opensearch.index.IndicesModuleResponse;
 import org.opensearch.indices.IndicesModule;
 import org.opensearch.indices.breaker.CircuitBreakerService;
 import org.opensearch.indices.breaker.NoneCircuitBreakerService;
+import org.opensearch.plugins.PluginsOrchestrator;
 import org.opensearch.search.SearchModule;
 import org.opensearch.sql.plugin.SQLPlugin;
 import org.opensearch.threadpool.ThreadPool;
@@ -58,18 +61,31 @@ public class RunPlugin {
 
     public RunPlugin() throws IOException {}
 
-//    public static transportservice.ExtensionSettings getExtensionSettings() throws IOException {
-//        File file = new File(transportservice.ExtensionSettings.EXTENSION_DESCRIPTOR);
+//    public static ExtensionSettings getExtensionSettings() throws IOException {
+//        File file = new File(ExtensionSettings.EXTENSION_DESCRIPTOR);
 //        ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
-//        transportservice.ExtensionSettings extensionSettings = objectMapper.readValue(file, transportservice.ExtensionSettings.class);
+//        ExtensionSettings extensionSettings = objectMapper.readValue(file, ExtensionSettings.class);
 //        return extensionSettings;
 //    }
-//
-//    PluginResponse handlePluginsRequest(PluginRequest pluginRequest) {
-//        logger.info("Handling Plugins Request");
-//        PluginResponse pluginResponse = new PluginResponse("RealExtension");
-//        return pluginResponse;
-//    }
+
+    PluginResponse handlePluginsRequest(PluginRequest pluginRequest) {
+        logger.info("Handling Plugins Request");
+        PluginResponse pluginResponse = new PluginResponse("RealExtension");
+        return pluginResponse;
+    }
+
+    IndicesModuleResponse handleIndicesModuleRequest(IndicesModuleRequest indicesModuleRequest) {
+        logger.info("Indices Module Request");
+        IndicesModuleResponse indicesModuleResponse = new IndicesModuleResponse(true, true, true);
+        return indicesModuleResponse;
+    }
+
+    // Works as beforeIndexRemoved
+    IndicesModuleNameResponse handleIndicesModuleNameRequest(IndicesModuleRequest indicesModuleRequest) {
+        logger.info("Indices Module Name Request");
+        IndicesModuleNameResponse indicesModuleNameResponse = new IndicesModuleNameResponse(true);
+        return indicesModuleNameResponse;
+    }
 
     // method : build netty transport
     public Netty4Transport getNetty4Transport(Settings settings, ThreadPool threadPool) {
@@ -138,14 +154,31 @@ public class RunPlugin {
         // start transport service and accept incoming requests
         transportService.start();
         transportService.acceptIncomingRequests();
-//        transportService.registerRequestHandler(
-//            REQUEST_EXTENSION_ACTION_NAME,
-//            ThreadPool.Names.GENERIC,
-//            false,
-//            false,
-//            PluginRequest::new,
-//            (request, channel, task) -> channel.sendResponse(handlePluginsRequest(request))
-//        );
+        transportService.registerRequestHandler(
+            REQUEST_EXTENSION_ACTION_NAME,
+            ThreadPool.Names.GENERIC,
+            false,
+            false,
+            PluginRequest::new,
+            (request, channel, task) -> channel.sendResponse(handlePluginsRequest(request))
+        );
+        transportService.registerRequestHandler(
+                PluginsOrchestrator.INDICES_EXTENSION_POINT_ACTION_NAME,
+                ThreadPool.Names.GENERIC,
+                false,
+                false,
+                IndicesModuleRequest::new,
+                ((request, channel, task) -> channel.sendResponse(handleIndicesModuleRequest(request)))
+
+        );
+        transportService.registerRequestHandler(
+                PluginsOrchestrator.INDICES_EXTENSION_NAME_ACTION_NAME,
+                ThreadPool.Names.GENERIC,
+                false,
+                false,
+                IndicesModuleRequest::new,
+                ((request, channel, task) -> channel.sendResponse(handleIndicesModuleNameRequest(request)))
+        );
     }
 
     // manager method for action listener

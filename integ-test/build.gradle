@@ -103,7 +103,7 @@ testClusters.integTest {
 
 // Run PPL ITs and new, legacy and comparison SQL ITs with new SQL engine enabled
 integTest {
-    dependsOn ':plugin:bundlePlugin'
+//    dependsOn ':plugin:bundlePlugin'
 
     systemProperty 'tests.security.manager', 'false'
     systemProperty('project.root', project.projectDir.absolutePath)

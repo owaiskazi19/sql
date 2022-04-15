@@ -58,7 +58,7 @@ allprojects {
 subprojects {
     repositories {
         mavenLocal()
-        maven { url "https://aws.oss.sonatype.org/content/repositories/snapshots" }
+        //maven { url "https://aws.oss.sonatype.org/content/repositories/snapshots" }
         mavenCentral()
     }
 }
